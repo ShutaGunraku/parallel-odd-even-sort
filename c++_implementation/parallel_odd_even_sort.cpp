@@ -6,7 +6,6 @@
 #include <vector>
 
 
-
 using namespace std;
 
 // function prototype
@@ -34,9 +33,9 @@ int main() {
     std::uniform_int_distribution<int> distribution(1, 100);  // Adjust the range as needed
 
     std::vector<int> sizes;
-    sizes.push_back(100);
-    sizes.push_back(500);
     sizes.push_back(1000);
+    sizes.push_back(5000);
+    sizes.push_back(10000);
 
     std::vector<long double> executionTimes;
 
@@ -76,6 +75,7 @@ int main() {
     return 0;
 }
 
+
 void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes)
 {
     std::ofstream outputFile(filename);
@@ -84,6 +84,9 @@ void exportToCSV(const std::string& filename, const std::vector<long double>& da
         std::cout << "Error opening file: " << filename << std::endl;
         return;
     }
+
+    // Write column headers
+    outputFile << "n,Listing1,Listing1Parallel,Listing2,Listing2Parallel,Listing3,Listing3Parallel,Listing4,Listing4Parallel" << std::endl;
 
     int index = 0;
     for (int n : sizes)
@@ -99,7 +102,6 @@ void exportToCSV(const std::string& filename, const std::vector<long double>& da
 
     outputFile.close();
 }
-
 
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName)
@@ -142,6 +144,7 @@ int* sortListing1(int A[], int n)
 
     return A;
 }
+
 
 int* sortListing1Parallel(int A[], int n)
 {
@@ -192,6 +195,7 @@ int* sortListing2(int A[], int n)
 
     return A;
 }
+
 
 int* sortListing2Parallel(int A[], int n)
 {
@@ -244,6 +248,7 @@ int* sortListing3(int A[], int n)
 
     return A;
 }
+
 
 int* sortListing3Parallel(int A[], int n)
 {
