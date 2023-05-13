@@ -6,23 +6,23 @@
 using namespace std;
 
 // function prototype
-int* list1_executer(int A[], int n);
-int* list1_parallel_executer(int A[], int n);
+long double list1_executor(int A[], int n);
+long double list1_parallel_executor(int A[], int n);
 int* list1_sort(int A[], int n);
 int* list1_sort_parallel(int A[], int n);
 
-int* list2_executer(int A[], int n);
-int* list2_parallel_executer(int A[], int n);
+long double list2_executor(int A[], int n);
+long double list2_parallel_executor(int A[], int n);
 int* list2_sort(int A[], int n);
 int* list2_sort_parallel(int A[], int n);
 
-int* list3_executer(int A[], int n);
-int* list3_parallel_executer(int A[], int n);
+long double list3_executor(int A[], int n);
+long double list3_parallel_executor(int A[], int n);
 int* list3_sort(int A[], int n);
 int* list3_sort_parallel(int A[], int n);
 
-int* list4_executer(int A[], int n);
-int* list4_parallel_executer(int A[], int n);
+long double list4_executor(int A[], int n);
+long double list4_parallel_executor(int A[], int n);
 int* list4_sort(int A[], int n);
 int* list4_sort_parallel(int A[], int n);
 
@@ -40,17 +40,17 @@ int main() {
     }
 
 
-    int* A1_sorted = list1_executer(A, n);
-    int* A1_sorted_parallel = list1_parallel_executer(A, n);
+    long double A1_time = list1_executor(A, n);
+    long double A1_parallel_time = list1_parallel_executor(A, n);
 
-    int* A2_sorted = list2_executer(A, n);
-    int* A2_sorted_parallel = list2_parallel_executer(A, n);
+    long double A2_time = list2_executor(A, n);
+    long double A2_parallel_time = list2_parallel_executor(A, n);
 
-    int* A3_sorted = list3_executer(A, n);
-    int* A3_sorted_parallel = list3_parallel_executer(A, n);
+    long double A3_time = list3_executor(A, n);
+    long double A3_sorted_time = list3_parallel_executor(A, n);
 
-    int* A4_sorted = list4_executer(A, n);
-    int* A4_sorted_parallel = list4_parallel_executer(A, n);
+    long double A4_sorted = list4_executor(A, n);
+    long double A4_sorted_time = list4_parallel_executor(A, n);
 
     // Deallocate dynamic arrays
     delete[] A;
@@ -59,7 +59,7 @@ int main() {
 }
 
 // Listing 1
-int* list1_executer(int A[], int n)
+long double list1_executor(int A[], int n)
 {
     int* A1 = new int[n];
     std::copy(A, A + n, A1);
@@ -68,6 +68,7 @@ int* list1_executer(int A[], int n)
     auto end1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration1 = end1 - start1;
 
+    long double execution_time = duration1.count() / 1000.0;
     // Print the sorted arrays
     cout << "Sorted arrays:" << endl;
     // listing 1
@@ -76,16 +77,16 @@ int* list1_executer(int A[], int n)
     //     cout << A1_sorted[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration1.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A1;
 
-    return A1_sorted;
+    return execution_time;
 }
 
 // Listing 1 parallel
-int* list1_parallel_executer(int A[], int n)
+long double list1_parallel_executor(int A[], int n)
 {
     int* A1_parallel = new int[n];
     std::copy(A, A + n, A1_parallel);
@@ -94,18 +95,19 @@ int* list1_parallel_executer(int A[], int n)
     auto end1_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration1_parallel = end1_parallel - start1_parallel;
 
+    long double execution_time = duration1_parallel.count() / 1000.0;
     cout << endl;
     cout << "A1_sorted_parallel: ";
     // for (int i=0; i<n; i++) {
     //     cout << A1_sorted_parallel[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration1_parallel.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A1_parallel;
 
-    return A1_sorted_parallel;
+    return execution_time;
 }
 
 int* list1_sort(int A[], int n)
@@ -159,7 +161,7 @@ int* list1_sort_parallel(int A[], int n)
 
 
 // Listing 2
-int* list2_executer(int A[], int n)
+long double list2_executor(int A[], int n)
 {
     int* A2 = new int[n];
     std::copy(A, A + n, A2);
@@ -168,23 +170,24 @@ int* list2_executer(int A[], int n)
     auto end2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration2 = end2 - start2;
 
+    long double execution_time = duration2.count() / 1000.0;
     cout << endl;
     cout << "A2_sorted: ";
     // for (int i = 0; i < n; i++) {
     //     cout << A2_sorted[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration2.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A2;
 
-    return A2_sorted;
+    return execution_time;
 }
 
 
 // listing 2 parallel
-int* list2_parallel_executer(int A[], int n)
+long double list2_parallel_executor(int A[], int n)
 {
     int* A2_parallel = new int[n];
     std::copy(A, A + n, A2_parallel);
@@ -193,18 +196,19 @@ int* list2_parallel_executer(int A[], int n)
     auto end2_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration2_parallel = end2_parallel - start2_parallel;
 
+    long double execution_time = duration2_parallel.count() / 1000.0;
     cout << endl;
     cout << "A2_sorted_parallel: ";
     // for (int i=0; i<n; i++) {
     //     cout << A2_sorted_parallel[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration2_parallel.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A2_parallel;
 
-    return A2_sorted_parallel;
+    return execution_time;
 }
 
 int* list2_sort(int A[], int n)
@@ -260,7 +264,7 @@ int* list2_sort_parallel(int A[], int n)
 }
 
 // Listing 3
-int* list3_executer(int A[], int n)
+long double list3_executor(int A[], int n)
 {
     int* A3 = new int[n];
     std::copy(A, A + n, A3);
@@ -269,21 +273,22 @@ int* list3_executer(int A[], int n)
     auto end3 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration3 = end3 - start3;
 
+    long double execution_time = duration3.count() / 1000.0;
     cout << endl;
     cout << "A3_sorted: ";
     // for (int i = 0; i < n; i++) {
     //     cout << A3_sorted[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration3.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A3;
 
-    return A3_sorted;
+    return execution_time;
 }
 
-int* list3_parallel_executer(int A[], int n)
+long double list3_parallel_executor(int A[], int n)
 {
     // Listing 3 parallel
     int* A3_parallel = new int[n];
@@ -293,18 +298,19 @@ int* list3_parallel_executer(int A[], int n)
     auto end3_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration3_parallel = end3_parallel - start3_parallel;
 
+    long double execution_time = duration3_parallel.count() / 1000.0;
     cout << endl;
     cout << "A3_sorted_parallel: ";
     // for (int i=0; i<n; i++) {
     //     cout << A3_sorted_parallel[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration3_parallel.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A3_parallel;
 
-    return A3_sorted_parallel;
+    return execution_time;
 }
 
 int* list3_sort(int A[], int n)
@@ -351,7 +357,7 @@ int* list3_sort_parallel(int A[], int n)
 
 
 // Listing 4
-int* list4_executer(int A[], int n)
+long double list4_executor(int A[], int n)
 {
     int* A4 = new int[n];
     std::copy(A, A + n, A4);
@@ -360,21 +366,22 @@ int* list4_executer(int A[], int n)
     auto end4 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration4 = end4 - start4;
 
+    long double execution_time = duration4.count() / 1000.0;
     cout << endl;
     cout << "A4_sorted: ";
     // for (int i = 0; i < n; i++) {
     //     cout << A4_sorted[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration4.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A4;
 
-    return A4_sorted;
+    return execution_time;
 }
 
-int* list4_parallel_executer(int A[], int n)
+long double list4_parallel_executor(int A[], int n)
 {
     // Listing 4 parallel
     int* A4_parallel = new int[n];
@@ -384,18 +391,19 @@ int* list4_parallel_executer(int A[], int n)
     auto end4_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration4_parallel = end4_parallel - start4_parallel;
 
+    long double execution_time = duration4_parallel.count() / 1000.0;
     cout << endl;
     cout << "A4_sorted_parallel: ";
     // for (int i=0; i<n; i++) {
     //     cout << A4_sorted_parallel[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << duration4_parallel.count() / 1000.0 << " seconds" << endl;
+    cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
     delete[] A4_parallel;
 
-    return A4_sorted_parallel;
+    return execution_time;
 }
 
 int* list4_sort(int A[], int n)
