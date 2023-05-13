@@ -6,10 +6,11 @@
 #include <vector>
 
 
+
 using namespace std;
 
 // function prototype
-void exportToCSV(const std::string& filename, const std::vector<long double>& data);
+void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes);
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName);
 
@@ -31,47 +32,51 @@ int main() {
     std::random_device rd;
     std::mt19937 generator(rd());
     std::uniform_int_distribution<int> distribution(1, 100);  // Adjust the range as needed
-    // 200000000
-    int n = 1000;  // Adjust the size as needed
-    int* A = new int[n];
-    for (int i = 0; i < n; i++) {
-        A[i] = distribution(generator);
-    }
+
+    std::vector<int> sizes;
+    sizes.push_back(100);
+    sizes.push_back(500);
+    sizes.push_back(1000);
 
     std::vector<long double> executionTimes;
 
-    // Define the sorting functions
-    auto sortFunc1 = sortListing1;
-    auto sortFunc1Parallel = sortListing1Parallel;
-    auto sortFunc2 = sortListing2;
-    auto sortFunc2Parallel = sortListing2Parallel;
-    auto sortFunc3 = sortListing3;
-    auto sortFunc3Parallel = sortListing3Parallel;
-    auto sortFunc4 = sortListing4;
-    auto sortFunc4Parallel = sortListing4Parallel;
+    // 200000000
+    for (int n : sizes) {
+        int* A = new int[n];
+        for (int i = 0; i < n; i++) {
+            A[i] = distribution(generator);
+        }
 
-    cout << "Sorted arrays:" << endl;
+        auto sortFunc1 = sortListing1;
+        auto sortFunc1Parallel = sortListing1Parallel;
+        auto sortFunc2 = sortListing2;
+        auto sortFunc2Parallel = sortListing2Parallel;
+        auto sortFunc3 = sortListing3;
+        auto sortFunc3Parallel = sortListing3Parallel;
+        auto sortFunc4 = sortListing4;
+        auto sortFunc4Parallel = sortListing4Parallel;
+        
+        // Execute the sorting functions and measure execution time
+        executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
+        executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
+        executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
+        executionTimes.push_back(executeListing(A, n, sortFunc2Parallel, "Listing2Parallel"));
+        executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
+        executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
+        executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
+        executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
 
-    // Execute the sorting functions and measure execution time
-    executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
-    executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
-    executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
-    executionTimes.push_back(executeListing(A, n, sortFunc2Parallel, "Listing2Parallel"));
-    executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
-    executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
-    executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
-    executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
+        delete[] A;
+    }
 
-    // Deallocate dynamic arrays
-    delete[] A;
 
     // Export the vector to a CSV file
-    exportToCSV("output.csv", executionTimes);
+    exportToCSV("output.csv", executionTimes, sizes);
 
     return 0;
 }
 
-void exportToCSV(const std::string& filename, const std::vector<long double>& data)
+void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes)
 {
     std::ofstream outputFile(filename);
     if (!outputFile.is_open())
@@ -80,13 +85,21 @@ void exportToCSV(const std::string& filename, const std::vector<long double>& da
         return;
     }
 
-    for (const auto& value : data)
+    int index = 0;
+    for (int n : sizes)
     {
-        outputFile << value << ",";
+        outputFile << n << ",";
+        for (int i = 0; i < 8; i++)
+        {
+            outputFile << data[index] << ",";
+            index++;
+        }
+        outputFile << std::endl;
     }
 
     outputFile.close();
 }
+
 
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName)
