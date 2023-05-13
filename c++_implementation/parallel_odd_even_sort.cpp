@@ -2,29 +2,35 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <fstream>
+#include <vector>
+
 
 using namespace std;
 
+
 // function prototype
-long double list1_executor(int A[], int n);
-long double list1_parallel_executor(int A[], int n);
-int* list1_sort(int A[], int n);
-int* list1_sort_parallel(int A[], int n);
+void exportToCSV(const std::string& filename, const std::vector<long double>& data);
 
-long double list2_executor(int A[], int n);
-long double list2_parallel_executor(int A[], int n);
-int* list2_sort(int A[], int n);
-int* list2_sort_parallel(int A[], int n);
+long double executeListing1(int A[], int n);
+long double executeListing1Parallel(int A[], int n);
+int* sortListing1(int A[], int n);
+int* sortListing1Parallel(int A[], int n);
 
-long double list3_executor(int A[], int n);
-long double list3_parallel_executor(int A[], int n);
-int* list3_sort(int A[], int n);
-int* list3_sort_parallel(int A[], int n);
+long double executeListing2(int A[], int n);
+long double executeListing2Parallel(int A[], int n);
+int* sortListing2(int A[], int n);
+int* sortListing2Parallel(int A[], int n);
 
-long double list4_executor(int A[], int n);
-long double list4_parallel_executor(int A[], int n);
-int* list4_sort(int A[], int n);
-int* list4_sort_parallel(int A[], int n);
+long double executeListing3(int A[], int n);
+long double executeListing3Parallel(int A[], int n);
+int* sortListing3(int A[], int n);
+int* sortListing3Parallel(int A[], int n);
+
+long double executeListing4(int A[], int n);
+long double executeListing4Parallel(int A[], int n);
+int* sortListing4(int A[], int n);
+int* sortListing4Parallel(int A[], int n);
 
 
 int main() {
@@ -39,32 +45,62 @@ int main() {
         A[i] = distribution(generator);
     }
 
+    long double A1_time = executeListing1(A, n);
+    long double A1_parallel_time = executeListing1Parallel(A, n);
 
-    long double A1_time = list1_executor(A, n);
-    long double A1_parallel_time = list1_parallel_executor(A, n);
+    long double A2_time = executeListing2(A, n);
+    long double A2_parallel_time = executeListing2Parallel(A, n);
 
-    long double A2_time = list2_executor(A, n);
-    long double A2_parallel_time = list2_parallel_executor(A, n);
+    long double A3_time = executeListing3(A, n);
+    long double A3_sorted_time = executeListing3Parallel(A, n);
 
-    long double A3_time = list3_executor(A, n);
-    long double A3_sorted_time = list3_parallel_executor(A, n);
-
-    long double A4_sorted = list4_executor(A, n);
-    long double A4_sorted_time = list4_parallel_executor(A, n);
+    long double A4_sorted = executeListing4(A, n);
+    long double A4_sorted_time = executeListing4Parallel(A, n);
 
     // Deallocate dynamic arrays
     delete[] A;
 
+    // Store the long double values in a vector
+    std::vector<long double> values;
+    values.push_back(A1_time);
+    values.push_back(A1_parallel_time);
+    values.push_back(A2_time);
+    values.push_back(A2_parallel_time);
+    values.push_back(A3_time);
+    values.push_back(A3_sorted_time);
+    values.push_back(A4_sorted);
+    values.push_back(A4_sorted_time);
+
+    // Export the vector to a CSV file
+    exportToCSV("output.csv", values);
+
     return 0;
 }
 
+void exportToCSV(const std::string& filename, const std::vector<long double>& data)
+{
+    std::ofstream outputFile(filename);
+    if (!outputFile.is_open())
+    {
+        std::cout << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    for (const auto& value : data)
+    {
+        outputFile << value << ",";
+    }
+
+    outputFile.close();
+}
+
 // Listing 1
-long double list1_executor(int A[], int n)
+long double executeListing1(int A[], int n)
 {
     int* A1 = new int[n];
     std::copy(A, A + n, A1);
     auto start1 = std::chrono::high_resolution_clock::now();
-    int* A1_sorted = list1_sort(A1, n);
+    int* A1_sorted = sortListing1(A1, n);
     auto end1 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration1 = end1 - start1;
 
@@ -86,12 +122,12 @@ long double list1_executor(int A[], int n)
 }
 
 // Listing 1 parallel
-long double list1_parallel_executor(int A[], int n)
+long double executeListing1Parallel(int A[], int n)
 {
     int* A1_parallel = new int[n];
     std::copy(A, A + n, A1_parallel);
     auto start1_parallel = std::chrono::high_resolution_clock::now();
-    int* A1_sorted_parallel = list1_sort_parallel(A1_parallel, n);
+    int* A1_sorted_parallel = sortListing1Parallel(A1_parallel, n);
     auto end1_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration1_parallel = end1_parallel - start1_parallel;
 
@@ -110,7 +146,7 @@ long double list1_parallel_executor(int A[], int n)
     return execution_time;
 }
 
-int* list1_sort(int A[], int n)
+int* sortListing1(int A[], int n)
 {
     // Parallel Odd-Even Sort
     for (int p = 1; p < n; p += p) 
@@ -124,7 +160,7 @@ int* list1_sort(int A[], int n)
     return A;
 }
 
-int* list1_sort_parallel(int A[], int n)
+int* sortListing1Parallel(int A[], int n)
 {
 
     for (int p = 1; p < n; p *= 2) 
@@ -161,12 +197,12 @@ int* list1_sort_parallel(int A[], int n)
 
 
 // Listing 2
-long double list2_executor(int A[], int n)
+long double executeListing2(int A[], int n)
 {
     int* A2 = new int[n];
     std::copy(A, A + n, A2);
     auto start2 = std::chrono::high_resolution_clock::now();
-    int* A2_sorted = list2_sort(A2, n);
+    int* A2_sorted = sortListing2(A2, n);
     auto end2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration2 = end2 - start2;
 
@@ -187,12 +223,12 @@ long double list2_executor(int A[], int n)
 
 
 // listing 2 parallel
-long double list2_parallel_executor(int A[], int n)
+long double executeListing2Parallel(int A[], int n)
 {
     int* A2_parallel = new int[n];
     std::copy(A, A + n, A2_parallel);
     auto start2_parallel = std::chrono::high_resolution_clock::now();
-    int* A2_sorted_parallel = list2_sort_parallel(A2_parallel, n);
+    int* A2_sorted_parallel = sortListing2Parallel(A2_parallel, n);
     auto end2_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration2_parallel = end2_parallel - start2_parallel;
 
@@ -211,7 +247,7 @@ long double list2_parallel_executor(int A[], int n)
     return execution_time;
 }
 
-int* list2_sort(int A[], int n)
+int* sortListing2(int A[], int n)
 {
     // Parallel Odd-Even Sort
     for(int p = 1; p < n; p *= 2) 
@@ -225,7 +261,7 @@ int* list2_sort(int A[], int n)
     return A;
 }
 
-int* list2_sort_parallel(int A[], int n)
+int* sortListing2Parallel(int A[], int n)
 {
     // no parallelisation part
     for(int p = 1; p < n; p *= 2) 
@@ -264,12 +300,12 @@ int* list2_sort_parallel(int A[], int n)
 }
 
 // Listing 3
-long double list3_executor(int A[], int n)
+long double executeListing3(int A[], int n)
 {
     int* A3 = new int[n];
     std::copy(A, A + n, A3);
     auto start3 = std::chrono::high_resolution_clock::now();
-    int* A3_sorted = list3_sort(A3, n);
+    int* A3_sorted = sortListing3(A3, n);
     auto end3 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration3 = end3 - start3;
 
@@ -288,13 +324,13 @@ long double list3_executor(int A[], int n)
     return execution_time;
 }
 
-long double list3_parallel_executor(int A[], int n)
+long double executeListing3Parallel(int A[], int n)
 {
     // Listing 3 parallel
     int* A3_parallel = new int[n];
     std::copy(A, A + n, A3_parallel);
     auto start3_parallel = std::chrono::high_resolution_clock::now();
-    int* A3_sorted_parallel = list3_sort_parallel(A3_parallel, n);
+    int* A3_sorted_parallel = sortListing3Parallel(A3_parallel, n);
     auto end3_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration3_parallel = end3_parallel - start3_parallel;
 
@@ -313,7 +349,7 @@ long double list3_parallel_executor(int A[], int n)
     return execution_time;
 }
 
-int* list3_sort(int A[], int n)
+int* sortListing3(int A[], int n)
 {
     for (int p = 1; p < n; p *= 2) 
         for (int k = p; k > 0; k /= 2) 
@@ -326,7 +362,7 @@ int* list3_sort(int A[], int n)
     return A;
 }
 
-int* list3_sort_parallel(int A[], int n)
+int* sortListing3Parallel(int A[], int n)
 {
     for (int p = 1; p < n; p *= 2) 
     {
@@ -357,12 +393,12 @@ int* list3_sort_parallel(int A[], int n)
 
 
 // Listing 4
-long double list4_executor(int A[], int n)
+long double executeListing4(int A[], int n)
 {
     int* A4 = new int[n];
     std::copy(A, A + n, A4);
     auto start4 = std::chrono::high_resolution_clock::now();
-    int* A4_sorted = list4_sort(A4, n);
+    int* A4_sorted = sortListing4(A4, n);
     auto end4 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration4 = end4 - start4;
 
@@ -381,13 +417,13 @@ long double list4_executor(int A[], int n)
     return execution_time;
 }
 
-long double list4_parallel_executor(int A[], int n)
+long double executeListing4Parallel(int A[], int n)
 {
     // Listing 4 parallel
     int* A4_parallel = new int[n];
     std::copy(A, A + n, A4_parallel);
     auto start4_parallel = std::chrono::high_resolution_clock::now();
-    int* A4_sorted_parallel = list4_sort_parallel(A4_parallel, n);
+    int* A4_sorted_parallel = sortListing4Parallel(A4_parallel, n);
     auto end4_parallel = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration4_parallel = end4_parallel - start4_parallel;
 
@@ -406,7 +442,7 @@ long double list4_parallel_executor(int A[], int n)
     return execution_time;
 }
 
-int* list4_sort(int A[], int n)
+int* sortListing4(int A[], int n)
 {
     for(int p = 1; p < n; p *= 2)
         for(int k = p; k > 0; k /= 2)
@@ -419,7 +455,7 @@ int* list4_sort(int A[], int n)
     return A;
 }
 
-int* list4_sort_parallel(int A[], int n)
+int* sortListing4Parallel(int A[], int n)
 {
     /*
     "pragma omp parallel for" arallelise the outermost loop across multiple threads.
