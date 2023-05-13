@@ -8,37 +8,20 @@
 
 using namespace std;
 
-enum SortingOption {
-    Listing1,
-    Listing1Parallel,
-    Listing2,
-    Listing2Parallel,
-    Listing3,
-    Listing3Parallel,
-    Listing4,
-    Listing4Parallel
-};
-
 // function prototype
 void exportToCSV(const std::string& filename, const std::vector<long double>& data);
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName);
-long double executeListing1Parallel(int A[], int n);
+
 int* sortListing1(int A[], int n);
 int* sortListing1Parallel(int A[], int n);
 
-long double executeListing2(int A[], int n);
-long double executeListing2Parallel(int A[], int n);
 int* sortListing2(int A[], int n);
 int* sortListing2Parallel(int A[], int n);
 
-long double executeListing3(int A[], int n);
-long double executeListing3Parallel(int A[], int n);
 int* sortListing3(int A[], int n);
 int* sortListing3Parallel(int A[], int n);
 
-long double executeListing4(int A[], int n);
-long double executeListing4Parallel(int A[], int n);
 int* sortListing4(int A[], int n);
 int* sortListing4Parallel(int A[], int n);
 
