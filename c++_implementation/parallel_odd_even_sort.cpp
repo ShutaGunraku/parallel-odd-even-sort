@@ -108,11 +108,11 @@ void exportToCSV(const std::string& filename, const std::vector<long double>& da
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName)
 {
-    int* A1 = new int[n];
-    std::copy(A, A + n, A1);
+    int* A_copy = new int[n];
+    std::copy(A, A + n, A_copy);
 
     auto start = std::chrono::high_resolution_clock::now();
-    int* A1Sorted = sortFunc(A1, n);
+    int* ASorted = sortFunc(A_copy, n);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
 
@@ -121,13 +121,13 @@ long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const s
     // Print the sorted array and execution time
     cout << sortFuncName << ": ";
     // for (int i = 0; i < n; i++) {
-    //     cout << A1Sorted[i] << " ";
+    //     cout << ASorted[i] << " ";
     // }
     cout << endl;
     cout << "Duration: " << execution_time << " seconds" << endl;
 
     // Deallocate dynamic arrays
-    delete[] A1;
+    delete[] A_copy;
 
     return execution_time;
 }
