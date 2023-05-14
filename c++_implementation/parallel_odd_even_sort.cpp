@@ -1,3 +1,11 @@
+/**
+ * @file parallel_odd_even_sort.cpp
+ * @brief This program generates arrays with random integers, sorts them using different sorting functions, and exports the execution times to a CSV file.
+ * @version 1.0
+ * @date 14th May 2023
+ * @author Shuta Gunraku
+ */
+
 #include <iostream>
 #include <algorithm>
 #include <chrono>
@@ -5,10 +13,9 @@
 #include <fstream>
 #include <vector>
 
-
 using namespace std;
 
-// function prototype
+// Function prototype
 void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes);
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName);
@@ -25,13 +32,18 @@ int* sortListing3Parallel(int A[], int n);
 int* sortListing4(int A[], int n);
 int* sortListing4Parallel(int A[], int n);
 
-
-int main() {
+/**
+ * Main function of the program
+ * @return 0 if the program is successful
+*/
+int main() 
+{
     // Generate random numbers
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_int_distribution<int> distribution(1, 100);  // Adjust the range as needed
+    std::uniform_int_distribution<int> distribution(1, 100); // Configure the range of the random numbers
 
+    // Configure the size of arrays to be sorted
     std::vector<int> sizes;
     sizes.push_back(1000);
     sizes.push_back(5000);
@@ -39,13 +51,16 @@ int main() {
 
     std::vector<long double> executionTimes;
 
-    // 200000000
-    for (int n : sizes) {
+    // Generate arrays of random numbers and sort them
+    for (int n: sizes) {
         int* A = new int[n];
         for (int i = 0; i < n; i++) {
             A[i] = distribution(generator);
         }
 
+        cout << "Sorting an array of length n = " << n << endl;
+
+        // Function pointers
         auto sortFunc1 = sortListing1;
         auto sortFunc1Parallel = sortListing1Parallel;
         auto sortFunc2 = sortListing2;
@@ -65,9 +80,9 @@ int main() {
         executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
         executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
 
+        // Deallocate the dynamic array
         delete[] A;
     }
-
 
     // Export the vector to a CSV file
     exportToCSV("output.csv", executionTimes, sizes);
@@ -76,6 +91,14 @@ int main() {
 }
 
 
+/**
+ * Exports the execution times to a CSV file.
+ * 
+ * @param filename the name of the CSV file
+ * @param data the execution times
+ * @param sizes the sizes of arrays to be sorted
+ * @return void
+*/
 void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes)
 {
     std::ofstream outputFile(filename);
@@ -104,17 +127,29 @@ void exportToCSV(const std::string& filename, const std::vector<long double>& da
 }
 
 
+/**
+ * Executes a sorting function and measures the execution time.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @param sortFunc the sorting function
+ * @param sortFuncName the name of the sorting function
+ * @return the execution time
+ * @see https://stackoverflow.com/questions/22387586/measuring-execution-time-of-a-function-in-c
+*/
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName)
 {
-    int* A_copy = new int[n];
-    std::copy(A, A + n, A_copy);
+    // Copy the array
+    int* ACopied = new int[n];
+    std::copy(A, A + n, ACopied);
 
+    // Execute the sorting function and measure execution time
     auto start = std::chrono::high_resolution_clock::now();
-    int* ASorted = sortFunc(A_copy, n);
+    int* ASorted = sortFunc(ACopied, n);
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
 
-    long double execution_time = duration.count() / 1000.0;
+    long double executionTime = duration.count() / 1000.0;
 
     // Print the sorted array and execution time
     cout << sortFuncName << ": ";
@@ -122,18 +157,25 @@ long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const s
     //     cout << ASorted[i] << " ";
     // }
     cout << endl;
-    cout << "Duration: " << execution_time << " seconds" << endl;
+    cout << "Duration: " << executionTime << " seconds" << endl;
 
     // Deallocate dynamic arrays
-    delete[] A_copy;
+    delete[] ACopied;
 
-    return execution_time;
+    return executionTime;
 }
 
 
+/**
+ * Sorts an array of integers using Listing 1.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+ * @see Sedgewick, R. Algorithms in C++, 1992
+*/
 int* sortListing1(int A[], int n)
 {
-    // Parallel Odd-Even Sort
     for (int p = 1; p < n; p += p) 
         for (int k = p; k > 0; k /= 2) 
             for (int j = k % p; j + k < n; j += 2 * k) 
@@ -146,15 +188,21 @@ int* sortListing1(int A[], int n)
 }
 
 
+/**
+ * @brief Sorts an array of integers using Listing 1 in parallel.
+ * "#pragma omp parallel for" parallelises for loops.
+ * "shared()" means that the variables inside it are shared between the threads.
+ * "default(none)" means that all variables must be explicitly declared as shared or private.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing1Parallel(int A[], int n)
 {
 
     for (int p = 1; p < n; p *= 2) 
     {
-        /* "#pragram omp parallel for" is used for parallelising the outermost loop.
-            shared(A, n, p) means that the variables A, n and p are shared between the threads.
-            default(none) means that all variables must be explicitly declared as shared or private.
-        */
         #pragma omp parallel for shared(A, n, p) default(none)
         for (int k = p; k > 0; k /= 2) 
         {
@@ -168,7 +216,7 @@ int* sortListing1Parallel(int A[], int n)
                     {
                         if (A[j+i] > A[j+i+k])
                         {
-                            // "#pragma omp critical" is used to ensure that only one thread can access the shared variable at a time.
+                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
                             #pragma omp critical
                             swap(A[j+i], A[j+i+k]);
                         }
@@ -182,9 +230,15 @@ int* sortListing1Parallel(int A[], int n)
 }
 
 
+/**
+ * Sorts an array of integers using Listing 2.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing2(int A[], int n)
 {
-    // Parallel Odd-Even Sort
     for(int p = 1; p < n; p *= 2) 
         for(int k = p; k > 0; k /= 2) 
             for(int j = k % p; j + k < 2*p; j += 2*k) 
@@ -197,16 +251,21 @@ int* sortListing2(int A[], int n)
 }
 
 
+/**
+ * @brief Sorts an array of integers using Listing 2 in parallel.
+ * "#pragma omp parallel for" parallelises for loops.
+ * "shared()" means that the variables inside it are shared between the threads.
+ * "default(none)" means that all variables must be explicitly declared as shared or private.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing2Parallel(int A[], int n)
 {
     // no parallelisation part
     for(int p = 1; p < n; p *= 2) 
     {
-        /*
-        "#pragma omp parallel for" is used to parallelise the loop.
-        shared(A, n, p) means that the variables A, n and p are shared between the threads.
-        default(none) means that all variables must be explicitly specified as shared or private.
-        */
         #pragma omp parallel for shared(A, n, p) default(none)
         for(int k = p; k > 0; k /= 2) 
         {
@@ -221,9 +280,7 @@ int* sortListing2Parallel(int A[], int n)
                     {
                         if(A[m] > A[m+k]) 
                         {
-                            /*
-                            critical means that the following block of code is executed by only one thread at a time.
-                            */
+                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
                             #pragma omp critical
                             swap(A[m], A[m+k]);
                         }
@@ -236,6 +293,13 @@ int* sortListing2Parallel(int A[], int n)
 }
 
 
+/**
+ * Sorts an array of integers using Listing 3.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing3(int A[], int n)
 {
     for (int p = 1; p < n; p *= 2) 
@@ -250,6 +314,16 @@ int* sortListing3(int A[], int n)
 }
 
 
+/**
+ * @brief Sorts an array of integers using Listing 3 in parallel.
+ * "#pragma omp parallel for" parallelises for loops.
+ * "shared()" means that the variables inside it are shared between the threads.
+ * "default(none)" means that all variables must be explicitly declared as shared or private.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing3Parallel(int A[], int n)
 {
     for (int p = 1; p < n; p *= 2) 
@@ -267,6 +341,7 @@ int* sortListing3Parallel(int A[], int n)
                     {
                         if (A[j+i] > A[j+i+k]) 
                         {
+                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
                             #pragma omp critical
                             std::swap(A[j+i], A[j+i+k]);
                         }
@@ -280,6 +355,13 @@ int* sortListing3Parallel(int A[], int n)
 }
 
 
+/**
+ * Sorts an array of integers using Listing 4.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing4(int A[], int n)
 {
     for(int p = 1; p < n; p *= 2)
@@ -294,19 +376,21 @@ int* sortListing4(int A[], int n)
 }
 
 
+/**
+ * @brief Sorts an array of integers using Listing 4 in parallel.
+ * "#pragma omp parallel for" parallelises for loops.
+ * "shared()" means that the variables inside it are shared between the threads.
+ * "default(none)" means that all variables must be explicitly declared as shared or private.
+ * 
+ * @param A the array to be sorted
+ * @param n the size of the array
+ * @return the sorted array
+*/
 int* sortListing4Parallel(int A[], int n)
 {
-    /*
-    "pragma omp parallel for" arallelise the outermost loop across multiple threads.
-    "default(none)" and "shared(A,n)" specifies that the variable
-    A and n are shared between the threads.
-    */
     #pragma omp parallel for default(none) shared(A,n)
     for(int p = 1; p < n; p *= 2)
     {
-        /*
-        "pragma omp for" statements parallelise the loops over k, j and i.
-        */
         #pragma omp for
         for(int k = p; k > 0; k /= 2)
         {
