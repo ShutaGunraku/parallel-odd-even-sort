@@ -16,7 +16,7 @@
 using namespace std;
 
 // Function prototype
-void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes);
+void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<long>& sizes);
 
 long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const std::string& sortFuncName);
 
@@ -44,10 +44,10 @@ int main()
     std::uniform_int_distribution<int> distribution(1, 100); // Configure the range of the random numbers
 
     // Configure the size of arrays to be sorted
-    std::vector<int> sizes;
-    sizes.push_back(1000);
-    sizes.push_back(5000);
-    sizes.push_back(10000);
+    std::vector<long> sizes;
+    sizes.push_back(100000);
+    // sizes.push_back(50000000);
+    // sizes.push_back(500000000);
 
     std::vector<long double> executionTimes;
 
@@ -65,20 +65,20 @@ int main()
         auto sortFunc1Parallel = sortListing1Parallel;
         auto sortFunc2 = sortListing2;
         auto sortFunc2Parallel = sortListing2Parallel;
-        auto sortFunc3 = sortListing3;
+        auto sortFunc3 = sortListing3; 
         auto sortFunc3Parallel = sortListing3Parallel;
         auto sortFunc4 = sortListing4;
         auto sortFunc4Parallel = sortListing4Parallel;
         
         // Execute the sorting functions and measure execution time
-        executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
-        executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
-        executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
         executionTimes.push_back(executeListing(A, n, sortFunc2Parallel, "Listing2Parallel"));
-        executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
-        executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
-        executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
-        executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
+        // executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
 
         // Deallocate the dynamic array
         delete[] A;
@@ -99,7 +99,7 @@ int main()
  * @param sizes the sizes of arrays to be sorted
  * @return void
 */
-void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<int>& sizes)
+void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<long>& sizes)
 {
     std::ofstream outputFile(filename);
     if (!outputFile.is_open())
@@ -172,7 +172,7 @@ long double executeListing(int A[], int n, int* (*sortFunc)(int[], int), const s
  * @param A the array to be sorted
  * @param n the size of the array
  * @return the sorted array
- * @see Sedgewick, R. Algorithms in C++, 1992
+ * @see R. Sedgewick, "Algorithms in C++, 1992," ed: Addison-Wesley.
 */
 int* sortListing1(int A[], int n)
 {
@@ -216,7 +216,7 @@ int* sortListing1Parallel(int A[], int n)
                     {
                         if (A[j+i] > A[j+i+k])
                         {
-                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
+                            // Ensures atomic access to the shared variable
                             #pragma omp critical
                             swap(A[j+i], A[j+i+k]);
                         }
