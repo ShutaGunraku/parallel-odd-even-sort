@@ -26,6 +26,7 @@ int* sortListing1Parallel(int A[], int n);
 
 int* sortListing2(int A[], int n);
 int* sortListing2Parallel(int A[], int n);
+int* sortListing2ParallelAlt(int A[], int n);
 
 int* sortListing3(int A[], int n);
 int* sortListing3Parallel(int A[], int n);
@@ -46,86 +47,88 @@ int main()
 
     // Configure the size of arrays to be sorted
     std::vector<long> sizes;
-    sizes.push_back(8);
-    sizes.push_back(9);
-
+    sizes.push_back(1);
+    sizes.push_back(2);
+    sizes.push_back(3);
 
     std::vector<long double> executionTimes;
 
-    // Generate arrays of random numbers and sort them
-    for (int zeroCount: sizes) {
-        int n = pow(10, zeroCount);
-        int* A = new int[n];
-        for (int i = 0; i < n; i++) {
-            A[i] = distribution(generator);
-        }
+    // Function pointers
+    auto sortFunc1 = sortListing1;
+    auto sortFunc1Parallel = sortListing1Parallel;
+    auto sortFunc2 = sortListing2;
+    auto sortFunc2Parallel = sortListing2Parallel;
+    auto sortFunc2ParallelAlt = sortListing2ParallelAlt;
+    auto sortFunc3 = sortListing3; 
+    auto sortFunc3Parallel = sortListing3Parallel;
+    auto sortFunc4 = sortListing4;
+    auto sortFunc4Parallel = sortListing4Parallel;
 
-        cout << "Sorting an array of length n = pow(10," << zeroCount << ")" << endl;
+    // Function list
+    typedef int* (*SortFunction)(int*, int);
+    std::vector<std::pair<SortFunction, std::string>> funcList = {
+        {sortFunc1, "Listing1"},
+        {sortFunc1Parallel, "Listing1Parallel"},
+        {sortFunc2, "Listing2"},
+        {sortFunc2Parallel, "Listing2Parallel"},
+        {sortFunc2ParallelAlt, "Listing2ParallelAlt"},
+        {sortFunc3, "Listing3"},
+        {sortFunc3Parallel, "Listing3Parallel"},
+        {sortFunc4, "Listing4"},
+        {sortFunc4Parallel, "Listing4Parallel"}
+    };
 
-        // Function pointers
-        auto sortFunc1 = sortListing1;
-        auto sortFunc1Parallel = sortListing1Parallel;
-        auto sortFunc2 = sortListing2;
-        auto sortFunc2Parallel = sortListing2Parallel;
-        auto sortFunc3 = sortListing3; 
-        auto sortFunc3Parallel = sortListing3Parallel;
-        auto sortFunc4 = sortListing4;
-        auto sortFunc4Parallel = sortListing4Parallel;
-        
-        // Execute the sorting functions and measure execution time
-        // executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
-        executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
-        executionTimes.push_back(executeListing(A, n, sortFunc2Parallel, "Listing2Parallel"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc4, "Listing4"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc4Parallel, "Listing4Parallel"));
-
-        // Deallocate the dynamic array
-        delete[] A;
-    }
-
-    // Export the vector to a CSV file
-    exportToCSV("output.csv", executionTimes, sizes);
-
-    return 0;
-}
-
-
-/**
- * Exports the execution times to a CSV file.
- * 
- * @param filename the name of the CSV file
- * @param data the execution times
- * @param sizes the sizes of arrays to be sorted
- * @return void
-*/
-void exportToCSV(const std::string& filename, const std::vector<long double>& data, const std::vector<long>& sizes)
-{
-    std::ofstream outputFile(filename);
-    if (!outputFile.is_open())
-    {
-        std::cout << "Error opening file: " << filename << std::endl;
-        return;
+    // Open the output file
+    std::fstream outputFile("output.csv", std::ios::out | std::ios::app);
+    if (!outputFile.is_open()) {
+        std::cout << "Error opening file: " << "output.csv" << std::endl;
+        return 1;
     }
 
     // Write column headers
-    outputFile << "n,Listing1,Listing1Parallel,Listing2,Listing2Parallel,Listing3,Listing3Parallel,Listing4,Listing4Parallel" << std::endl;
-
-    int index = 0;
-    for (int n : sizes)
-    {
-        outputFile << n << ",";
-        for (int i = 0; i < 8; i++)
-        {
-            outputFile << data[index] << ",";
-            index++;
-        }
-        outputFile << std::endl;
+    outputFile << "n";
+    for (const auto& func : funcList) {
+        outputFile << "," << func.second;
     }
+    outputFile << std::endl;
+    
+    // Generate arrays of random numbers and sort them
+    for (int zeroCount: sizes) {
+         
+            int n = pow(10, zeroCount);
+            int* A = new int[n];
+            for (int i = 0; i < n; i++) {
+                A[i] = distribution(generator);
+            }
 
+            cout << "Sorting an array of length n = pow(10," << zeroCount << ")" << endl;
+
+            for (const auto& func : funcList) {
+                executionTimes.push_back(executeListing(A, n, func.first, func.second));
+            }
+
+            // Write the execution times to the output file
+            outputFile << n << ",";
+            for(long double time : executionTimes) {
+                outputFile << time << ",";
+            }
+
+            outputFile << std::endl;
+
+            // Deallocate the dynamic array
+            delete[] A;
+
+            // Clear the vector
+            executionTimes.clear();
+        }
+
+    // Add an empty row
+    outputFile << std::endl;
+
+    // Close the output file
     outputFile.close();
+
+    return 0;
 }
 
 
@@ -263,37 +266,37 @@ int* sortListing2(int A[], int n)
  * @param n the size of the array
  * @return the sorted array
 */
-// int* sortListing2Parallel(int A[], int n)
-// {
-//     // no parallelisation part
-//     for(int p = 1; p < n; p *= 2) 
-//     {
-//         #pragma omp parallel for shared(A, n, p) default(none)
-//         for(int k = p; k > 0; k /= 2) 
-//         {
-//             #pragma omp parallel for shared(A, n, p, k) default(none)
-//             for(int j = k % p; j + k < 2*p; j += 2*k) 
-//             {
-//                 #pragma omp parallel for shared(A, n, p, k, j) default(none)
-//                 for(int i = 0; i < k; i++) 
-//                 {
-//                     #pragma omp parallel for shared(A, n, p, k, j, i) default(none)
-//                     for(int m = i + j; m < n - k; m += 2*p) 
-//                     {
-//                         if(A[m] > A[m+k]) 
-//                         {
-//                             // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
-//                             #pragma omp critical
-//                             swap(A[m], A[m+k]);
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     return A;
-// }
 int* sortListing2Parallel(int A[], int n)
+{
+    // no parallelisation part
+    for(int p = 1; p < n; p *= 2) 
+    {
+        #pragma omp parallel for shared(A, n, p) default(none)
+        for(int k = p; k > 0; k /= 2) 
+        {
+            #pragma omp parallel for shared(A, n, p, k) default(none)
+            for(int j = k % p; j + k < 2*p; j += 2*k) 
+            {
+                #pragma omp parallel for shared(A, n, p, k, j) default(none)
+                for(int i = 0; i < k; i++) 
+                {
+                    #pragma omp parallel for shared(A, n, p, k, j, i) default(none)
+                    for(int m = i + j; m < n - k; m += 2*p) 
+                    {
+                        if(A[m] > A[m+k]) 
+                        {
+                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
+                            #pragma omp critical
+                            swap(A[m], A[m+k]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return A;
+}
+int* sortListing2ParallelAlt(int A[], int n)
 {
     for(int p = 1; p < n; p *= 2) 
     {
