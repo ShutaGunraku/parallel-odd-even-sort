@@ -12,6 +12,7 @@
 #include <random>
 #include <fstream>
 #include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -45,20 +46,21 @@ int main()
 
     // Configure the size of arrays to be sorted
     std::vector<long> sizes;
-    sizes.push_back(100000);
-    // sizes.push_back(50000000);
-    // sizes.push_back(500000000);
+    sizes.push_back(8);
+    sizes.push_back(9);
+
 
     std::vector<long double> executionTimes;
 
     // Generate arrays of random numbers and sort them
-    for (int n: sizes) {
+    for (int zeroCount: sizes) {
+        int n = pow(10, zeroCount);
         int* A = new int[n];
         for (int i = 0; i < n; i++) {
             A[i] = distribution(generator);
         }
 
-        cout << "Sorting an array of length n = " << n << endl;
+        cout << "Sorting an array of length n = pow(10," << zeroCount << ")" << endl;
 
         // Function pointers
         auto sortFunc1 = sortListing1;
@@ -73,7 +75,7 @@ int main()
         // Execute the sorting functions and measure execution time
         // executionTimes.push_back(executeListing(A, n, sortFunc1, "Listing1"));
         // executionTimes.push_back(executeListing(A, n, sortFunc1Parallel, "Listing1Parallel"));
-        // executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
+        executionTimes.push_back(executeListing(A, n, sortFunc2, "Listing2"));
         executionTimes.push_back(executeListing(A, n, sortFunc2Parallel, "Listing2Parallel"));
         // executionTimes.push_back(executeListing(A, n, sortFunc3, "Listing3"));
         // executionTimes.push_back(executeListing(A, n, sortFunc3Parallel, "Listing3Parallel"));
@@ -261,9 +263,38 @@ int* sortListing2(int A[], int n)
  * @param n the size of the array
  * @return the sorted array
 */
+// int* sortListing2Parallel(int A[], int n)
+// {
+//     // no parallelisation part
+//     for(int p = 1; p < n; p *= 2) 
+//     {
+//         #pragma omp parallel for shared(A, n, p) default(none)
+//         for(int k = p; k > 0; k /= 2) 
+//         {
+//             #pragma omp parallel for shared(A, n, p, k) default(none)
+//             for(int j = k % p; j + k < 2*p; j += 2*k) 
+//             {
+//                 #pragma omp parallel for shared(A, n, p, k, j) default(none)
+//                 for(int i = 0; i < k; i++) 
+//                 {
+//                     #pragma omp parallel for shared(A, n, p, k, j, i) default(none)
+//                     for(int m = i + j; m < n - k; m += 2*p) 
+//                     {
+//                         if(A[m] > A[m+k]) 
+//                         {
+//                             // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
+//                             #pragma omp critical
+//                             swap(A[m], A[m+k]);
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+//     return A;
+// }
 int* sortListing2Parallel(int A[], int n)
 {
-    // no parallelisation part
     for(int p = 1; p < n; p *= 2) 
     {
         #pragma omp parallel for shared(A, n, p) default(none)
@@ -275,13 +306,11 @@ int* sortListing2Parallel(int A[], int n)
                 #pragma omp parallel for shared(A, n, p, k, j) default(none)
                 for(int i = 0; i < k; i++) 
                 {
-                    #pragma omp parallel for shared(A, n, p, k, j, i) default(none)
+                    #pragma omp parallel for shared(A, n, p, k, j, i) reduction(min : m) default(none)
                     for(int m = i + j; m < n - k; m += 2*p) 
                     {
                         if(A[m] > A[m+k]) 
                         {
-                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
-                            #pragma omp critical
                             swap(A[m], A[m+k]);
                         }
                     }
@@ -341,7 +370,7 @@ int* sortListing3Parallel(int A[], int n)
                     {
                         if (A[j+i] > A[j+i+k]) 
                         {
-                            // "#pragma omp critical" ensures that only one thread can access the shared variable at a time.
+                            // Ensures atomic access to the shared variable
                             #pragma omp critical
                             std::swap(A[j+i], A[j+i+k]);
                         }
